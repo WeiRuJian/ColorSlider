@@ -14,6 +14,7 @@
 		6263732725B32FD3009E3A42 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6263732625B32FD3009E3A42 /* Assets.xcassets */; };
 		6263732A25B32FD3009E3A42 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6263732825B32FD3009E3A42 /* LaunchScreen.storyboard */; };
 		6263732D25B32FD3009E3A42 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 6263732C25B32FD3009E3A42 /* main.m */; };
+		6263733725B330D3009E3A42 /* ColorSlider.m in Sources */ = {isa = PBXBuildFile; fileRef = 6263733625B330D3009E3A42 /* ColorSlider.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -29,6 +30,8 @@
 		6263732925B32FD3009E3A42 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		6263732B25B32FD3009E3A42 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		6263732C25B32FD3009E3A42 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		6263733525B330D3009E3A42 /* ColorSlider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ColorSlider.h; sourceTree = "<group>"; };
+		6263733625B330D3009E3A42 /* ColorSlider.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ColorSlider.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -61,6 +64,7 @@
 		6263731925B32FD1009E3A42 /* ColorSlider */ = {
 			isa = PBXGroup;
 			children = (
+				6263733425B330A9009E3A42 /* ColorSlider */,
 				6263731A25B32FD1009E3A42 /* AppDelegate.h */,
 				6263731B25B32FD1009E3A42 /* AppDelegate.m */,
 				6263731D25B32FD1009E3A42 /* SceneDelegate.h */,
@@ -72,6 +76,15 @@
 				6263732825B32FD3009E3A42 /* LaunchScreen.storyboard */,
 				6263732B25B32FD3009E3A42 /* Info.plist */,
 				6263732C25B32FD3009E3A42 /* main.m */,
+			);
+			path = ColorSlider;
+			sourceTree = "<group>";
+		};
+		6263733425B330A9009E3A42 /* ColorSlider */ = {
+			isa = PBXGroup;
+			children = (
+				6263733525B330D3009E3A42 /* ColorSlider.h */,
+				6263733625B330D3009E3A42 /* ColorSlider.m */,
 			);
 			path = ColorSlider;
 			sourceTree = "<group>";
@@ -148,6 +161,7 @@
 				6263732225B32FD1009E3A42 /* ViewController.m in Sources */,
 				6263731C25B32FD1009E3A42 /* AppDelegate.m in Sources */,
 				6263732D25B32FD3009E3A42 /* main.m in Sources */,
+				6263733725B330D3009E3A42 /* ColorSlider.m in Sources */,
 				6263731F25B32FD1009E3A42 /* SceneDelegate.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -29,6 +29,7 @@ typedef NS_ENUM(NSInteger, ColorSliderDirection) {
 @property (nonatomic, strong) UIView *maskView;
 @property (nonatomic, strong) UIView *sliderMaskView;
 
+@property (nonatomic, strong) UIView *intensityView;
 @property (nonatomic, assign) ColorSliderStyle style;
 @end
 
@@ -56,27 +57,6 @@ typedef NS_ENUM(NSInteger, ColorSliderDirection) {
     self.sliderMaskView.hidden = !enable;
 }
 
-- (void)setValue:(NSInteger)value {
-    _value = value;
-    
-    switch (self.style) {
-        case ColorSliderStyleHUE:
-            self.valueLabel.text = [NSString stringWithFormat:@"%lu°",value];
-            self.sliderView.backgroundColor = [UIColor colorWithHue:value/360.0 saturation:1 brightness:1 alpha:1];
-            CGFloat l = (self.maxValue - self.minValue) / CGRectGetHeight(self.colorAreaView.frame);
-            CGFloat y =  (self.maxValue - value + CGRectGetMinY(self.colorAreaView.frame) + 10) / l;
-            CGRect rect = self.sliderView.frame;
-            rect.origin.y = y;
-            self.sliderView.frame = rect;
-            self.sliderMaskView.frame = self.sliderView.frame;
-            break;
-            
-        default:
-            break;
-    }
-    
-}
-
 - (void)setupUI {
     
     self.valueLabel = [[UILabel alloc] init];
@@ -94,14 +74,22 @@ typedef NS_ENUM(NSInteger, ColorSliderDirection) {
     
     
     self.colorAreaView = [[UIView alloc] init];
+    self.colorAreaView.layer.cornerRadius = 8;
     self.colorAreaView.translatesAutoresizingMaskIntoConstraints = NO;
     [self addSubview:self.colorAreaView];
+    
+    self.intensityView = [[UIView alloc] init];
+    self.intensityView.layer.cornerRadius = 8;
+    self.intensityView.backgroundColor = UIColor.clearColor;
+    [self addSubview:self.intensityView];
     
     self.maskView = [[UIView alloc] init];
     self.maskView.layer.cornerRadius = 8;
     self.maskView.hidden = YES;
     self.maskView.backgroundColor = [UIColor colorWithWhite:0 alpha:0.4];
     [self addSubview:self.maskView];
+    
+    
     
     self.sliderView = [[UIView alloc] init];
     self.sliderView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -122,27 +110,38 @@ typedef NS_ENUM(NSInteger, ColorSliderDirection) {
     switch (self.style) {
         case ColorSliderStyleHUE:
             self.titleLabel.text = @"HUE";
+            self.valueLabel.text = @"0°";
+            self.sliderView.backgroundColor = [UIColor colorWithHue:0 saturation:1 brightness:1 alpha:1];
             self.minValue = 0;
             self.maxValue = 360;
             break;
         case ColorSliderStyleCCT:
             self.titleLabel.text = @"CCT";
+            self.valueLabel.text = @"1600K";
+            self.sliderView.backgroundColor = [self colorWithCCT:16];
             self.minValue = 16;
             self.maxValue = 100;
             break;
         case ColorSliderStyleINT:
+            self.colorAreaView.backgroundColor = [UIColor colorWithRed:16/255.0 green:16/255.0 blue:16/255.0 alpha:1];
+            self.sliderView.backgroundColor = [UIColor colorWithRed:162/255.0 green:162/255.0 blue:162/255.0 alpha:1];
+            self.intensityView.backgroundColor = [UIColor colorWithRed:162/255.0 green:162/255.0 blue:162/255.0 alpha:1];
             self.titleLabel.text = @"INT";
+            self.valueLabel.text = @"0%";
             self.minValue = 0;
             self.maxValue = 100;
             break;
         case ColorSliderStyleGM:
             self.titleLabel.text = @"G/M";
-            self.minValue = -10;
-            self.maxValue = 10;
+            self.valueLabel.text = @"M1.0";
+            self.sliderView.backgroundColor = [self colorWithGM:0];
+            self.minValue = 0;
+            self.maxValue = 20;
             break;
         default:
             break;
     }
+
 }
 
 -(void)drawRect:(CGRect)rect {
@@ -159,16 +158,33 @@ typedef NS_ENUM(NSInteger, ColorSliderDirection) {
         /// 垂直布局
         self.direction = ColorSliderDirectionVertical;
         self.valueLabel.frame = CGRectMake(0, self.margin, w, 30);
-        self.colorAreaView.frame = CGRectMake(3, CGRectGetMaxY(self.valueLabel.frame) + self.padding, w - 6, h - (30 + self.margin + self.padding) * 2);
+        self.colorAreaView.frame = CGRectMake(3,
+                                              CGRectGetMaxY(self.valueLabel.frame) + self.padding,
+                                              w - 6,
+                                              h - (30 + self.margin + self.padding) * 2);
         
+        self.intensityView.frame = CGRectMake(CGRectGetMinX(self.colorAreaView.frame),
+                                              CGRectGetMaxY(self.colorAreaView.frame),
+                                              CGRectGetWidth(self.colorAreaView.frame),
+                                              0);
+        
+        self.sliderView.frame = CGRectMake(0, CGRectGetMaxY(self.colorAreaView.frame)-10, w, 20);
         if (self.value) {
+            
             CGFloat l = (self.maxValue - self.minValue) / CGRectGetHeight(self.colorAreaView.frame);
-            CGFloat y = self.value / l;
-            CGRect r = CGRectMake(0, CGRectGetMaxY(self.colorAreaView.frame)-10, w, 20);
-            r.origin.y = y;
-            self.sliderView.frame = r;
-        } else {
-            self.sliderView.frame = CGRectMake(0, CGRectGetMaxY(self.colorAreaView.frame)-10, w, 20);
+            CGFloat y =  (self.maxValue - self.value + CGRectGetMinY(self.colorAreaView.frame) + 10) / l;
+            CGRect rect = self.sliderView.frame;
+            rect.origin.y = y;
+            self.sliderView.frame = rect;
+            self.sliderMaskView.frame = self.sliderView.frame;
+            
+            CGRect intRect = self.intensityView.frame;
+            intRect.origin.y = y;
+            intRect.size.height = (h - self.margin - self.padding - 30) - y;
+            self.intensityView.frame = intRect;
+            
+            
+            [self setSliderOnValue:self.value atLocationY:y];
         }
         
         self.titleLabel.frame = CGRectMake(0, h - (self.margin + 30), w, 30);
@@ -231,26 +247,15 @@ typedef NS_ENUM(NSInteger, ColorSliderDirection) {
             
             /// 拖动中
             if (sender.state == UIGestureRecognizerStateChanged) {
-                switch (self.style) {
-                    case ColorSliderStyleHUE:
-                    {
-                        CGFloat offset = y - CGRectGetMinY(self.colorAreaView.frame) + 10;
-                        CGFloat l = (self.maxValue - self.minValue) / CGRectGetHeight(self.colorAreaView.frame);
-                        NSInteger degree = self.maxValue - offset * l;
-                        self.valueLabel.text = [NSString stringWithFormat:@"%lu°",degree];
-                        self.sliderView.backgroundColor = [UIColor colorWithHue:degree/360.0 saturation:1 brightness:1 alpha:1];
-                        
-                        if (self.delegate && [self.delegate conformsToProtocol:@protocol(ColorSliderDelegate)]) {
-                            [self.delegate colorSliderDidChangedValue:degree];
-                        }
-                        break;
-                        
-                    }
-                        
-                    default:
-                        break;
-                }
+                CGFloat offset = y - CGRectGetMinY(self.colorAreaView.frame) + 10;
+                CGFloat scale = (self.maxValue - self.minValue) / CGRectGetHeight(self.colorAreaView.frame);
+                NSInteger value = self.maxValue - offset * scale;
                 
+                [self setSliderOnValue:value atLocationY:y];
+                
+                if (self.delegate && [self.delegate conformsToProtocol:@protocol(ColorSliderDelegate)]) {
+                    [self.delegate colorSliderDidChangedValue:value];
+                }
             }
             
             /// 拖动结束
@@ -282,10 +287,48 @@ typedef NS_ENUM(NSInteger, ColorSliderDirection) {
         }
             break;
     }
-    
-    
-    
-    
+}
+
+- (void)setSliderOnValue:(NSInteger)value atLocationY:(CGFloat)y {
+    switch (self.style) {
+        case ColorSliderStyleHUE:
+        {
+            
+            self.valueLabel.text = [NSString stringWithFormat:@"%lu°",value];
+            self.sliderView.backgroundColor = [UIColor colorWithHue:value/360.0 saturation:1 brightness:1 alpha:1];
+            
+            break;
+        }
+        case ColorSliderStyleCCT:
+        {
+            self.valueLabel.text = [NSString stringWithFormat:@"%dK",(int)value * 100];
+            self.sliderView.backgroundColor = [self colorWithCCT:(int)value];
+            break;
+        }
+        case ColorSliderStyleGM:
+        {
+            if (value < 10) {
+                self.valueLabel.text = [NSString stringWithFormat:@"M%.1f",1 - fabs(value/10.0)];
+            } else if (value > 10) {
+                self.valueLabel.text = [NSString stringWithFormat:@"G%.1f",fabs(value/10.0) - 1];
+            } else {
+                self.valueLabel.text = @"0.0";
+            }
+            self.sliderView.backgroundColor = [self colorWithGM:value];
+            break;
+        }
+        case ColorSliderStyleINT:
+        {
+            self.valueLabel.text = [NSString stringWithFormat:@"%lu%@",value, @"%"];
+            CGRect rect = self.intensityView.frame;
+            rect.origin.y = y;
+            rect.size.height = (self.bounds.size.height - self.margin - self.padding - 30) - y;
+            self.intensityView.frame = rect;
+            break;
+        }
+        default:
+            break;
+    }
 }
 
 - (NSArray *)hueColors {
@@ -315,5 +358,40 @@ typedef NS_ENUM(NSInteger, ColorSliderDirection) {
              (id)[UIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:1].CGColor,
              (id)[UIColor colorWithRed:0.0 green:1.0 blue:0 alpha:1].CGColor];
 }
+
+- (UIColor *)colorWithCCT:(NSInteger)cct {
+    CGFloat center = (self.maxValue - self.minValue)/2.0;
+    if (cct < center) {
+        CGFloat k = 1.0*(cct-self.minValue)/(center - self.minValue);
+        CGFloat red = (254 + k * (255-254))/255.0;
+        CGFloat green = (200 + k * (255-200))/255.0;
+        CGFloat blue = (64 + k * (255-64))/255.0;;
+        return  [UIColor colorWithRed:red green:green blue:blue alpha:1];
+    } else {
+        CGFloat k = 1.0*(cct - center)/(self.maxValue - center);
+        CGFloat red = (255 - k * (255-128))/255.0;;
+        CGFloat green = (255 - k * (255-228))/255.0;
+        CGFloat blue =  1;
+        return  [UIColor colorWithRed:red green:green blue:blue alpha:1];
+    }
+}
+
+- (UIColor *)colorWithGM:(NSInteger)gm {
+    CGFloat center = (self.maxValue - self.minValue)/2.0;
+    if (gm < center) {
+        CGFloat k = 1.0*(gm-self.minValue)/(center - self.minValue);
+        CGFloat red = (0 + k * (255-0))/255.0;
+        CGFloat green = (255 + k * (255-255))/255.0;
+        CGFloat blue = (0 + k * (255-0))/255.0;;
+        return  [UIColor colorWithRed:red green:green blue:blue alpha:1];
+    } else {
+        CGFloat k = 1.0*(gm - center)/(self.maxValue - center);
+        CGFloat red = (255 - k * (255-255))/255.0;;
+        CGFloat green = (255 - k * (255-0))/255.0;
+        CGFloat blue =  (255 - k * (255-207))/255.0;;
+        return  [UIColor colorWithRed:red green:green blue:blue alpha:1];
+    }
+}
+
 
 @end

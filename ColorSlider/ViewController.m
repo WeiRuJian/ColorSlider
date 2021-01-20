@@ -22,9 +22,12 @@
     self.sliderView = [[ColorSlider alloc] initWithStyle:ColorSliderStyleINT];
     self.sliderView.frame = CGRectMake(0, 0, 66, 300 );
     self.sliderView.center = self.view.center;
-    self.sliderView.value = 50;
+//    self.sliderView.value = 50;
     self.sliderView.delegate = self;
     [self.view addSubview:self.sliderView];
+    
+    self.sliderView.font = [UIFont boldSystemFontOfSize:22];
+    self.sliderView.textColor = UIColor.whiteColor;
     
     UIButton *button = [UIButton buttonWithType:UIButtonTypeContactAdd];
     button.center = CGPointMake(self.view.center.x, self.view.center.y + 200);

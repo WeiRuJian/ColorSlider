@@ -57,16 +57,26 @@ typedef NS_ENUM(NSInteger, ColorSliderDirection) {
     self.sliderMaskView.hidden = !enable;
 }
 
+- (void)setFont:(UIFont *)font {
+    _font = font;
+    self.valueLabel.font = font;
+    self.titleLabel.font = font;
+}
+
+- (void)setTextColor:(UIColor *)textColor {
+    _textColor = textColor;
+    self.valueLabel.textColor = textColor;
+    self.titleLabel.textColor = textColor;
+}
+
 - (void)setupUI {
     
     self.valueLabel = [[UILabel alloc] init];
-    self.valueLabel.translatesAutoresizingMaskIntoConstraints = NO;
     self.valueLabel.text = @"0°";
     self.valueLabel.textAlignment = NSTextAlignmentCenter;
     [self addSubview:self.valueLabel];
     
     self.titleLabel = [[UILabel alloc] init];
-    self.titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
     self.titleLabel.text = @"HUE";
     self.titleLabel.textAlignment = NSTextAlignmentCenter;
     [self addSubview:self.titleLabel];
@@ -75,7 +85,6 @@ typedef NS_ENUM(NSInteger, ColorSliderDirection) {
     
     self.colorAreaView = [[UIView alloc] init];
     self.colorAreaView.layer.cornerRadius = 8;
-    self.colorAreaView.translatesAutoresizingMaskIntoConstraints = NO;
     [self addSubview:self.colorAreaView];
     
     self.intensityView = [[UIView alloc] init];
@@ -92,7 +101,6 @@ typedef NS_ENUM(NSInteger, ColorSliderDirection) {
     
     
     self.sliderView = [[UIView alloc] init];
-    self.sliderView.translatesAutoresizingMaskIntoConstraints = NO;
     self.sliderView.layer.cornerRadius = 4;
     self.sliderView.layer.borderWidth = 3;
     self.sliderView.backgroundColor = [UIColor colorWithHue:0 saturation:1 brightness:1 alpha:1];

@@ -43,10 +43,10 @@
     self.sliderView.value = f;
 }
 
-- (void)colorSliderDidChangedValue:(NSInteger)value {
+- (void)colorSlider:(ColorSlider *)colorSlider didChangedValue:(NSInteger)value {
     NSLog(@"%lu", value);
 }
-- (void)colorSliderDidChangedOutputValue:(NSInteger)value {
+- (void)colorSlider:(ColorSlider *)colorSlider didChangedOutputValue:(NSInteger)value {
     NSLog(@"--%lu--", value);
 }
 @end

@@ -156,7 +156,7 @@ typedef NS_ENUM(NSInteger, ColorSliderDirection) {
         default:
             break;
     }
-
+    
 }
 
 -(void)drawRect:(CGRect)rect {
@@ -203,7 +203,7 @@ typedef NS_ENUM(NSInteger, ColorSliderDirection) {
         
         switch (self.style) {
             case ColorSliderStyleINT:
-            
+                
                 break;
                 
             default:
@@ -266,29 +266,20 @@ typedef NS_ENUM(NSInteger, ColorSliderDirection) {
                 [self setSliderOnValue:value atLocationY:y];
                 
                 if (self.delegate && [self.delegate conformsToProtocol:@protocol(ColorSliderDelegate)]) {
-                    [self.delegate colorSliderDidChangedValue:value];
+                    [self.delegate colorSlider:self didChangedValue:value];
                 }
             }
             
             /// 拖动结束
             if(sender.state == UIGestureRecognizerStateEnded) {
-                switch (self.style) {
-                    case ColorSliderStyleHUE:
-                    {
-                        CGFloat offset = y - CGRectGetMinY(self.colorAreaView.frame) + 10;
-                        CGFloat l = (self.maxValue - self.minValue) / CGRectGetHeight(self.colorAreaView.frame);
-                        NSInteger degree = self.maxValue - offset * l;
-                        
-                        if (self.delegate && [self.delegate conformsToProtocol:@protocol(ColorSliderDelegate)]) {
-                            [self.delegate colorSliderDidChangedOutputValue:degree];
-                        }
-                    }
-                        break;
-                        
-                    default:
-                        break;
-                }
                 
+                
+                CGFloat offset = y - CGRectGetMinY(self.colorAreaView.frame) + 10;
+                CGFloat scale = (self.maxValue - self.minValue) / CGRectGetHeight(self.colorAreaView.frame);
+                NSInteger value = self.maxValue - offset * scale;
+                if (self.delegate && [self.delegate conformsToProtocol:@protocol(ColorSliderDelegate)]) {
+                    [self.delegate colorSlider:self didChangedOutputValue:value];
+                }
             }
         }
             break;

@@ -146,6 +146,13 @@ typedef NS_ENUM(NSInteger, ColorSliderDirection) {
             self.minValue = 0;
             self.maxValue = 20;
             break;
+        case ColorSliderStyleSAT:
+            self.titleLabel.text = @"SAT";
+            self.valueLabel.text = @"0%";
+            self.sliderView.backgroundColor = [self colorWithSAT:0];;
+            self.minValue = 0;
+            self.maxValue = 100;
+            break;
         default:
             break;
     }
@@ -212,6 +219,9 @@ typedef NS_ENUM(NSInteger, ColorSliderDirection) {
                 }
                 if (self.style == ColorSliderStyleGM) {
                     gradientLayer.colors = [self gmColors];
+                }
+                if (self.style == ColorSliderStyleSAT) {
+                    gradientLayer.colors = [self satColors];
                 }
                 gradientLayer.startPoint = CGPointMake(0, 0);
                 gradientLayer.endPoint = CGPointMake(0, 1);
@@ -328,6 +338,12 @@ typedef NS_ENUM(NSInteger, ColorSliderDirection) {
             self.intensityView.frame = rect;
             break;
         }
+        case ColorSliderStyleSAT:
+        {
+            self.valueLabel.text = [NSString stringWithFormat:@"%lu%@",value, @"%"];
+            self.sliderView.backgroundColor = [self colorWithSAT:value];
+            break;
+        }
         default:
             break;
     }
@@ -359,6 +375,19 @@ typedef NS_ENUM(NSInteger, ColorSliderDirection) {
     return @[(id)[UIColor colorWithRed:1.0 green:0 blue:207.0/255.0 alpha:1].CGColor,
              (id)[UIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:1].CGColor,
              (id)[UIColor colorWithRed:0.0 green:1.0 blue:0 alpha:1].CGColor];
+}
+
+- (NSArray *)satColors {
+    return @[(id)[UIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:1].CGColor,
+             (id)[UIColor colorWithRed:0 green:164.0/255.0 blue:1.0 alpha:1].CGColor];
+}
+
+- (UIColor *)colorWithSAT:(NSInteger)sat {
+    CGFloat k = 1.0*(sat-self.minValue)/(self.maxValue - self.minValue);
+    CGFloat red = (0 + k *(255-0))/255.0;
+    CGFloat green = (164 + k*(255-164))/255.0;
+    CGFloat blue = (255 + k *(255-255))/255.0;
+    return  [UIColor colorWithRed:red green:green blue:blue alpha:1];
 }
 
 - (UIColor *)colorWithCCT:(NSInteger)cct {

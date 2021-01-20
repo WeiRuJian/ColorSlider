@@ -12,7 +12,8 @@ typedef NS_ENUM(NSInteger, ColorSliderStyle) {
     ColorSliderStyleHUE = 0, /// HSI色彩
     ColorSliderStyleCCT, /// CCT色温
     ColorSliderStyleINT, /// INT 亮度
-    ColorSliderStyleGM /// GM 绿/品
+    ColorSliderStyleGM, /// GM 绿/品
+    ColorSliderStyleSAT /// SAT 饱和度
 };
 
 

@@ -19,7 +19,7 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
-    self.sliderView = [[ColorSlider alloc] initWithStyle:ColorSliderStyleINT];
+    self.sliderView = [[ColorSlider alloc] initWithStyle:ColorSliderStyleSAT];
     self.sliderView.frame = CGRectMake(0, 0, 66, 300 );
     self.sliderView.center = self.view.center;
 //    self.sliderView.value = 50;

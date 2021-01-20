@@ -171,18 +171,12 @@ typedef NS_ENUM(NSInteger, ColorSliderDirection) {
         self.sliderView.frame = CGRectMake(0, CGRectGetMaxY(self.colorAreaView.frame)-10, w, 20);
         if (self.value) {
             
-            CGFloat l = (self.maxValue - self.minValue) / CGRectGetHeight(self.colorAreaView.frame);
-            CGFloat y =  (self.maxValue - self.value + CGRectGetMinY(self.colorAreaView.frame) + 10) / l;
+            CGFloat offset = (self.maxValue - self.minValue) / CGRectGetHeight(self.colorAreaView.frame);
+            CGFloat y =  ((self.maxValue - self.value)/offset + CGRectGetMinY(self.colorAreaView.frame) - 10);
             CGRect rect = self.sliderView.frame;
             rect.origin.y = y;
             self.sliderView.frame = rect;
             self.sliderMaskView.frame = self.sliderView.frame;
-            
-            CGRect intRect = self.intensityView.frame;
-            intRect.origin.y = y;
-            intRect.size.height = (h - self.margin - self.padding - 30) - y;
-            self.intensityView.frame = intRect;
-            
             
             [self setSliderOnValue:self.value atLocationY:y];
         }

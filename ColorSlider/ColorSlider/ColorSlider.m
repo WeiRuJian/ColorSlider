@@ -78,6 +78,18 @@ typedef NS_ENUM(NSInteger, ColorSliderDirection) {
     self.titleLabel.textColor = textColor;
 }
 
+- (void)setValue:(NSInteger)value {
+    _value = value;
+    
+    CGFloat offset = (self.maxValue - self.minValue) / CGRectGetHeight(self.colorAreaView.frame);
+    CGFloat y =  ((self.maxValue - self.value)/offset + CGRectGetMinY(self.colorAreaView.frame) - 10);
+    CGRect rect = self.sliderView.frame;
+    rect.origin.y = y;
+    self.sliderView.frame = rect;
+    self.sliderMaskView.frame = self.sliderView.frame;
+    [self setSliderOnValue:self.value atLocationY:y];
+}
+
 - (void)setupUI {
     
     self.valueLabel = [[UILabel alloc] init];
@@ -433,15 +445,15 @@ typedef NS_ENUM(NSInteger, ColorSliderDirection) {
 }
 
 - (UIColor *)colorWithGM:(NSInteger)gm {
-    
-    if (gm < CCT_VALUE) {
-        CGFloat k = 1.0*(gm-self.minValue)/(CCT_VALUE - self.minValue);
+    NSInteger center = (self.maxValue - self.minValue) / 2;
+    if (gm < center) {
+        CGFloat k = 1.0*(gm-self.minValue)/(center - self.minValue);
         CGFloat red = (0 + k * (255-0))/255.0;
         CGFloat green = (255 + k * (255-255))/255.0;
         CGFloat blue = (0 + k * (255-0))/255.0;;
         return  [UIColor colorWithRed:red green:green blue:blue alpha:1];
     } else {
-        CGFloat k = 1.0*(gm - CCT_VALUE)/(self.maxValue - CCT_VALUE);
+        CGFloat k = 1.0*(gm - center)/(self.maxValue - center);
         CGFloat red = (255 - k * (255-255))/255.0;;
         CGFloat green = (255 - k * (255-0))/255.0;
         CGFloat blue =  (255 - k * (255-207))/255.0;;

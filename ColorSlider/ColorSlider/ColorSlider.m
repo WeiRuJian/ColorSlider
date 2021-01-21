@@ -9,6 +9,7 @@
 
 #define COLOR_SLIDER_PADDING 10.0
 #define COLOR_SLIDER_MARGIN 5.0
+#define CCT_VALUE 56
 
 /// 滑块方向
 typedef NS_ENUM(NSInteger, ColorSliderDirection) {
@@ -31,6 +32,12 @@ typedef NS_ENUM(NSInteger, ColorSliderDirection) {
 
 @property (nonatomic, strong) UIView *intensityView;
 @property (nonatomic, assign) ColorSliderStyle style;
+@property (nonatomic, strong) CADisplayLink *displayLink;
+
+/// HUE 0~360 || CCT 16~100 || GM -10~10 || INT 0~100
+@property (nonatomic, assign) NSInteger minValue;
+@property (nonatomic, assign) NSInteger maxValue;
+
 @end
 
 @implementation ColorSlider
@@ -44,6 +51,11 @@ typedef NS_ENUM(NSInteger, ColorSliderDirection) {
         self.margin = COLOR_SLIDER_MARGIN;
         self.style = style;
         [self setupUI];
+        
+        self.displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(displayLinkHandle)];
+        NSRunLoop *runLoop = NSRunLoop.mainRunLoop;
+        [self.displayLink addToRunLoop:runLoop forMode:NSDefaultRunLoopMode];
+        self.displayLink.paused = true;
     }
     return self;
 }
@@ -129,6 +141,8 @@ typedef NS_ENUM(NSInteger, ColorSliderDirection) {
             self.sliderView.backgroundColor = [self colorWithCCT:16];
             self.minValue = 16;
             self.maxValue = 100;
+            self.minCCT = self.minValue;
+            self.maxCCT = self.maxValue;
             break;
         case ColorSliderStyleINT:
             self.colorAreaView.backgroundColor = [UIColor colorWithRed:16/255.0 green:16/255.0 blue:16/255.0 alpha:1];
@@ -253,9 +267,26 @@ typedef NS_ENUM(NSInteger, ColorSliderDirection) {
                 y = CGRectGetMaxY(self.colorAreaView.frame) - 10;
             }
             
+            if (self.style == ColorSliderStyleCCT) {
+                CGFloat l = (self.maxValue - self.minValue)/CGRectGetHeight(self.colorAreaView.frame);
+                CGFloat maxY = CGRectGetMaxY(self.colorAreaView.frame) - (self.minCCT-self.minValue) / l - 10;
+                CGFloat minY = CGRectGetMaxY(self.colorAreaView.frame) - (self.maxCCT-self.minValue) / l - 10;
+                
+                if (y < minY) {
+                    y = minY;
+                }
+                if (y > maxY) {
+                    y = maxY;
+                }
+            }
+            
             rect.origin.y = y;
             self.sliderView.frame = rect;
             self.sliderMaskView.frame = self.sliderView.frame;
+            
+            if (sender.state == UIGestureRecognizerStateBegan) {
+                self.displayLink.paused = NO;
+            }
             
             /// 拖动中
             if (sender.state == UIGestureRecognizerStateChanged) {
@@ -264,22 +295,13 @@ typedef NS_ENUM(NSInteger, ColorSliderDirection) {
                 NSInteger value = self.maxValue - offset * scale;
                 
                 [self setSliderOnValue:value atLocationY:y];
+                self.value = value;
                 
-                if (self.delegate && [self.delegate conformsToProtocol:@protocol(ColorSliderDelegate)]) {
-                    [self.delegate colorSlider:self didChangedValue:value];
-                }
             }
             
             /// 拖动结束
             if(sender.state == UIGestureRecognizerStateEnded) {
-                
-                
-                CGFloat offset = y - CGRectGetMinY(self.colorAreaView.frame) + 10;
-                CGFloat scale = (self.maxValue - self.minValue) / CGRectGetHeight(self.colorAreaView.frame);
-                NSInteger value = self.maxValue - offset * scale;
-                if (self.delegate && [self.delegate conformsToProtocol:@protocol(ColorSliderDelegate)]) {
-                    [self.delegate colorSlider:self didChangedOutputValue:value];
-                }
+                self.displayLink.paused = YES;
             }
         }
             break;
@@ -290,6 +312,16 @@ typedef NS_ENUM(NSInteger, ColorSliderDirection) {
         }
             break;
     }
+}
+
+- (void)displayLinkHandle {
+   
+    if (self.delegate && [self.delegate conformsToProtocol:@protocol(ColorSliderDelegate)]) {
+        [self.delegate colorSlider:self didChangedValue:self.value];
+    }
+    /// 按一秒60帧计算 0.5秒回调一次数据
+    self.displayLink.preferredFramesPerSecond = 60 * 0.5 * self.displayLink.duration;
+    
 }
 
 - (void)setSliderOnValue:(NSInteger)value atLocationY:(CGFloat)y {
@@ -382,15 +414,15 @@ typedef NS_ENUM(NSInteger, ColorSliderDirection) {
 }
 
 - (UIColor *)colorWithCCT:(NSInteger)cct {
-    CGFloat center = (self.maxValue - self.minValue)/2.0;
-    if (cct < center) {
-        CGFloat k = 1.0*(cct-self.minValue)/(center - self.minValue);
+    
+    if (cct < CCT_VALUE) {
+        CGFloat k = 1.0*(cct-self.minValue)/(CCT_VALUE - self.minValue);
         CGFloat red = (254 + k * (255-254))/255.0;
         CGFloat green = (200 + k * (255-200))/255.0;
         CGFloat blue = (64 + k * (255-64))/255.0;;
         return  [UIColor colorWithRed:red green:green blue:blue alpha:1];
     } else {
-        CGFloat k = 1.0*(cct - center)/(self.maxValue - center);
+        CGFloat k = 1.0*(cct - CCT_VALUE)/(self.maxValue - CCT_VALUE);
         CGFloat red = (255 - k * (255-128))/255.0;;
         CGFloat green = (255 - k * (255-228))/255.0;
         CGFloat blue =  1;
@@ -399,15 +431,15 @@ typedef NS_ENUM(NSInteger, ColorSliderDirection) {
 }
 
 - (UIColor *)colorWithGM:(NSInteger)gm {
-    CGFloat center = (self.maxValue - self.minValue)/2.0;
-    if (gm < center) {
-        CGFloat k = 1.0*(gm-self.minValue)/(center - self.minValue);
+    
+    if (gm < CCT_VALUE) {
+        CGFloat k = 1.0*(gm-self.minValue)/(CCT_VALUE - self.minValue);
         CGFloat red = (0 + k * (255-0))/255.0;
         CGFloat green = (255 + k * (255-255))/255.0;
         CGFloat blue = (0 + k * (255-0))/255.0;;
         return  [UIColor colorWithRed:red green:green blue:blue alpha:1];
     } else {
-        CGFloat k = 1.0*(gm - center)/(self.maxValue - center);
+        CGFloat k = 1.0*(gm - CCT_VALUE)/(self.maxValue - CCT_VALUE);
         CGFloat red = (255 - k * (255-255))/255.0;;
         CGFloat green = (255 - k * (255-0))/255.0;
         CGFloat blue =  (255 - k * (255-207))/255.0;;

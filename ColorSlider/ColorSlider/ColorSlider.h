@@ -26,9 +26,6 @@ typedef NS_ENUM(NSInteger, ColorSliderStyle) {
 /// @param value 当前变化值
 - (void)colorSlider:(ColorSlider *_Nullable)colorSlider didChangedValue:(NSInteger)value;
 
-/// 数据变化结束更新
-/// @param value 当前结束变化的值
-- (void)colorSlider:(ColorSlider *_Nullable)colorSlider didChangedOutputValue:(NSInteger)value;
 @end
 
 NS_ASSUME_NONNULL_BEGIN
@@ -44,12 +41,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) NSInteger value;
 
-/// HUE 0~360 || CCT 16~100 || GM -10~10 || INT 0~100
-@property (nonatomic, assign) NSInteger minValue;
-@property (nonatomic, assign) NSInteger maxValue;
+
 
 @property (nonatomic, strong) UIFont *font;
 @property (nonatomic, strong) UIColor *textColor;
+
+@property (nonatomic, assign) NSInteger minCCT;
+@property (nonatomic, assign) NSInteger maxCCT;
 
 @end
 

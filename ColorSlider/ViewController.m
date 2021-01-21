@@ -19,10 +19,12 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
-    self.sliderView = [[ColorSlider alloc] initWithStyle:ColorSliderStyleSAT];
+    self.sliderView = [[ColorSlider alloc] initWithStyle:ColorSliderStyleCCT];
     self.sliderView.frame = CGRectMake(0, 0, 66, 300 );
     self.sliderView.center = self.view.center;
 //    self.sliderView.value = 50;
+    self.sliderView.maxCCT = 56;
+    self.sliderView.minCCT = 23;
     self.sliderView.delegate = self;
     [self.view addSubview:self.sliderView];
     
@@ -46,7 +48,5 @@
 - (void)colorSlider:(ColorSlider *)colorSlider didChangedValue:(NSInteger)value {
     NSLog(@"%lu", value);
 }
-- (void)colorSlider:(ColorSlider *)colorSlider didChangedOutputValue:(NSInteger)value {
-    NSLog(@"--%lu--", value);
-}
+
 @end

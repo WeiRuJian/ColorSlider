@@ -23,10 +23,10 @@
     self.sliderView.frame = CGRectMake(0, 0, 66, 300 );
     self.sliderView.center = self.view.center;
 //    self.sliderView.value = 50;
-    self.sliderView.maxCCT = 56;
-    self.sliderView.minCCT = 23;
+   
     self.sliderView.delegate = self;
     [self.view addSubview:self.sliderView];
+    
     
     self.sliderView.font = [UIFont boldSystemFontOfSize:22];
     self.sliderView.textColor = UIColor.whiteColor;
@@ -35,6 +35,9 @@
     button.center = CGPointMake(self.view.center.x, self.view.center.y + 200);
     [self.view addSubview:button];
     [button addTarget:self action:@selector(buttonClick:) forControlEvents:UIControlEventTouchUpInside];
+    
+    self.sliderView.maxCCT = 56;
+    self.sliderView.minCCT = 23;
 }
 
 - (void)buttonClick:(UIButton *)sender {

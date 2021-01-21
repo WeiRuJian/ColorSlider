@@ -10,6 +10,7 @@
 #define COLOR_SLIDER_PADDING 10.0
 #define COLOR_SLIDER_MARGIN 5.0
 #define CCT_VALUE 56
+#define SEND_DATA_INTERVAL 0.2 /// 回调数据时间间隔200毫秒
 
 /// 滑块方向
 typedef NS_ENUM(NSInteger, ColorSliderDirection) {
@@ -32,12 +33,13 @@ typedef NS_ENUM(NSInteger, ColorSliderDirection) {
 
 @property (nonatomic, strong) UIView *intensityView;
 @property (nonatomic, assign) ColorSliderStyle style;
-@property (nonatomic, strong) CADisplayLink *displayLink;
+@property (nonatomic, strong) NSTimer *timer;
 
 /// HUE 0~360 || CCT 16~100 || GM -10~10 || INT 0~100
 @property (nonatomic, assign) NSInteger minValue;
 @property (nonatomic, assign) NSInteger maxValue;
 
+@property (nonatomic, assign) BOOL allowSend;
 @end
 
 @implementation ColorSlider
@@ -51,11 +53,6 @@ typedef NS_ENUM(NSInteger, ColorSliderDirection) {
         self.margin = COLOR_SLIDER_MARGIN;
         self.style = style;
         [self setupUI];
-        
-        self.displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(displayLinkHandle)];
-        NSRunLoop *runLoop = NSRunLoop.mainRunLoop;
-        [self.displayLink addToRunLoop:runLoop forMode:NSDefaultRunLoopMode];
-        self.displayLink.paused = true;
     }
     return self;
 }
@@ -284,8 +281,11 @@ typedef NS_ENUM(NSInteger, ColorSliderDirection) {
             self.sliderView.frame = rect;
             self.sliderMaskView.frame = self.sliderView.frame;
             
+            /// 开始拖动
             if (sender.state == UIGestureRecognizerStateBegan) {
-                self.displayLink.paused = NO;
+                if (!self.timer) {
+                    self.timer = [NSTimer scheduledTimerWithTimeInterval:SEND_DATA_INTERVAL target:self selector:@selector(allowSendValue) userInfo:nil repeats:YES];
+                }
             }
             
             /// 拖动中
@@ -297,11 +297,19 @@ typedef NS_ENUM(NSInteger, ColorSliderDirection) {
                 [self setSliderOnValue:value atLocationY:y];
                 self.value = value;
                 
+                if (self.allowSend) {
+                    if (self.delegate && [self.delegate conformsToProtocol:@protocol(ColorSliderDelegate)]) {
+                        [self.delegate colorSlider:self didChangedValue:self.value];
+                    }
+                    self.allowSend = NO;
+                }
             }
             
             /// 拖动结束
             if(sender.state == UIGestureRecognizerStateEnded) {
-                self.displayLink.paused = YES;
+                [self.timer invalidate];
+                self.timer = nil;
+                self.allowSend = NO;
             }
         }
             break;
@@ -314,14 +322,8 @@ typedef NS_ENUM(NSInteger, ColorSliderDirection) {
     }
 }
 
-- (void)displayLinkHandle {
-   
-    if (self.delegate && [self.delegate conformsToProtocol:@protocol(ColorSliderDelegate)]) {
-        [self.delegate colorSlider:self didChangedValue:self.value];
-    }
-    /// 按一秒60帧计算 0.5秒回调一次数据
-    self.displayLink.preferredFramesPerSecond = 60 * 0.5 * self.displayLink.duration;
-    
+- (void)allowSendValue {
+    self.allowSend = YES;
 }
 
 - (void)setSliderOnValue:(NSInteger)value atLocationY:(CGFloat)y {
@@ -447,5 +449,12 @@ typedef NS_ENUM(NSInteger, ColorSliderDirection) {
     }
 }
 
+- (void)dealloc
+{
+    if (self.timer) {
+        [self.timer invalidate];
+        self.timer = nil;
+    }
+}
 
 @end

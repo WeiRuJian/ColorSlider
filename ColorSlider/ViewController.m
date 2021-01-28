@@ -19,7 +19,7 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
-    self.sliderView = [[ColorSlider alloc] initWithStyle:ColorSliderStyleGM];
+    self.sliderView = [[ColorSlider alloc] initWithStyle:ColorSliderStyleHUE];
     self.sliderView.frame = CGRectMake(0, 0, 66, 300 );
     self.sliderView.center = self.view.center;
 //    self.sliderView.value = 50;
@@ -28,7 +28,7 @@
     [self.view addSubview:self.sliderView];
     
     
-    self.sliderView.font = [UIFont boldSystemFontOfSize:22];
+    self.sliderView.font = [UIFont boldSystemFontOfSize:16];
     self.sliderView.textColor = UIColor.whiteColor;
     
     UIButton *button = [UIButton buttonWithType:UIButtonTypeContactAdd];
@@ -36,8 +36,6 @@
     [self.view addSubview:button];
     [button addTarget:self action:@selector(buttonClick:) forControlEvents:UIControlEventTouchUpInside];
     
-//    self.sliderView.maxCCT = 56;
-//    self.sliderView.minCCT = 23;
 }
 
 - (void)buttonClick:(UIButton *)sender {
@@ -46,8 +44,12 @@
     
 }
 
+- (void)colorSlider:(ColorSlider *)colorSlider didOutputValue:(NSInteger)value {
+//    NSLog(@"didOutputValue: %lu", value);
+}
+
 - (void)colorSlider:(ColorSlider *)colorSlider didChangedValue:(NSInteger)value {
-    NSLog(@"%lu", value);
+//    NSLog(@"didChangedValue: %lu", value);
 }
 
 @end

@@ -21,10 +21,15 @@ typedef NS_ENUM(NSInteger, ColorSliderStyle) {
 @class ColorSlider;
 
 @protocol ColorSliderDelegate <NSObject>
+
+
 @optional
 /// 数据变化实时更新
-/// @param value 当前变化值
 - (void)colorSlider:(ColorSlider *_Nullable)colorSlider didChangedValue:(NSInteger)value;
+
+@required
+/// 间隔发送数据
+- (void)colorSlider:(ColorSlider *_Nullable)colorSlider didOutputValue:(NSInteger)value;
 
 @end
 

@@ -53,6 +53,9 @@ typedef NS_ENUM(NSInteger, ColorSliderDirection) {
         self.margin = COLOR_SLIDER_MARGIN;
         self.style = style;
         [self setupUI];
+        
+        UIPanGestureRecognizer *panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(colorAreaViewPanGesture:)];
+        [self.colorAreaView addGestureRecognizer:panGesture];
     }
     return self;
 }
@@ -300,6 +303,13 @@ typedef NS_ENUM(NSInteger, ColorSliderDirection) {
                 }
             }
             
+            /// 拖动结束
+            if(sender.state == UIGestureRecognizerStateEnded) {
+                [self.timer invalidate];
+                self.timer = nil;
+                self.allowSend = NO;
+            }
+            
             /// 拖动中
             if (sender.state == UIGestureRecognizerStateChanged) {
                 CGFloat offset = y - CGRectGetMinY(self.colorAreaView.frame) + 10;
@@ -311,18 +321,18 @@ typedef NS_ENUM(NSInteger, ColorSliderDirection) {
                 
                 if (self.allowSend) {
                     if (self.delegate && [self.delegate conformsToProtocol:@protocol(ColorSliderDelegate)]) {
-                        [self.delegate colorSlider:self didChangedValue:self.value];
+                        [self.delegate colorSlider:self didOutputValue:value];
+                        self.allowSend = NO;
                     }
-                    self.allowSend = NO;
+                    
+                }
+                
+                if (self.delegate && [self.delegate respondsToSelector:@selector(colorSlider:didChangedValue:)]) {
+                    [self.delegate colorSlider:self didChangedValue:value];
                 }
             }
             
-            /// 拖动结束
-            if(sender.state == UIGestureRecognizerStateEnded) {
-                [self.timer invalidate];
-                self.timer = nil;
-                self.allowSend = NO;
-            }
+           
         }
             break;
             
@@ -336,6 +346,65 @@ typedef NS_ENUM(NSInteger, ColorSliderDirection) {
 
 - (void)allowSendValue {
     self.allowSend = YES;
+}
+
+- (void)colorAreaViewPanGesture:(UIPanGestureRecognizer *)sender {
+    CGPoint location = [sender locationInView:self.colorAreaView];
+   
+    
+    static CGFloat offsetY = 0.0;
+    if (sender.state == UIGestureRecognizerStateBegan) {
+        CGPoint origin =  self.sliderView.frame.origin;
+        offsetY = origin.y - location.y;
+        if (!self.timer) {
+            self.timer = [NSTimer scheduledTimerWithTimeInterval:SEND_DATA_INTERVAL target:self selector:@selector(allowSendValue) userInfo:nil repeats:YES];
+        }
+    }
+    if (sender.state == UIGestureRecognizerStateEnded) {
+        
+        [self.timer invalidate];
+        self.timer = nil;
+        self.allowSend = NO;
+    }
+    
+    if (sender.state == UIGestureRecognizerStateChanged) {
+       
+        
+        CGFloat y = location.y + offsetY;
+        if (y > CGRectGetMaxY(self.colorAreaView.frame) - 10) {
+            y = CGRectGetMaxY(self.colorAreaView.frame) - 10;
+        }
+        if (y < CGRectGetMinY(self.colorAreaView.frame) - 10) {
+            y = CGRectGetMinY(self.colorAreaView.frame) - 10;
+        }
+        
+        
+        NSLog(@"colorAreaViewPanGesture:(%f, %f, %f)",offsetY, location.y, y);
+        
+        CGRect rect = self.sliderView.frame;
+        rect.origin.y = y;
+        self.sliderView.frame = rect;
+        self.sliderMaskView.frame = self.sliderView.frame;
+        
+        CGFloat offset = y - CGRectGetMinY(self.colorAreaView.frame) + 10;
+        CGFloat scale = (self.maxValue - self.minValue) / CGRectGetHeight(self.colorAreaView.frame);
+        NSInteger value = self.maxValue - offset * scale;
+        
+        [self setSliderOnValue:value atLocationY:y];
+        self.value = value;
+        
+        if (self.allowSend) {
+            if (self.delegate && [self.delegate conformsToProtocol:@protocol(ColorSliderDelegate)]) {
+                [self.delegate colorSlider:self didOutputValue:value];
+                self.allowSend = NO;
+            }
+            
+        }
+        
+        if (self.delegate && [self.delegate respondsToSelector:@selector(colorSlider:didChangedValue:)]) {
+            [self.delegate colorSlider:self didChangedValue:value];
+        }
+    }
 }
 
 - (void)setSliderOnValue:(NSInteger)value atLocationY:(CGFloat)y {
